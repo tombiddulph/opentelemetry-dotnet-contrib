@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Added opt-in librdkafka client statistics metrics for instrumented Kafka
+  producers and consumers.
+  ([#5203](https://github.com/open-telemetry/opentelemetry-dotnet-contrib/issues/5203))
+
 ## 0.3.0-alpha.1
 
 Released 2026-Aug-21

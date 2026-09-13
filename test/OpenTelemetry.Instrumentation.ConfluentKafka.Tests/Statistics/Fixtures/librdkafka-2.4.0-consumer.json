@@ -1,0 +1,50 @@
+{
+  "name": "rdkafka#consumer-1",
+  "client_id": "fixture-consumer",
+  "type": "consumer",
+  "msg_size": 0,
+  "msg_size_max": 0,
+  "cgrp": {
+    "assignment_size": 1,
+    "rebalance_cnt": 2,
+    "rebalance_age": 3500
+  },
+  "brokers": {
+    "bootstrap:9092/bootstrap": {
+      "nodeid": -1,
+      "state": "UP",
+      "waitresp_cnt": 99,
+      "tx": 99,
+      "txbytes": 99,
+      "txretries": 99,
+      "rx": 99,
+      "rxbytes": 99,
+      "int_latency": { "avg": 99000, "max": 99000, "cnt": 1 },
+      "rtt": { "avg": 99000, "max": 99000, "cnt": 1 },
+      "throttle": { "avg": 99, "max": 99, "cnt": 1 }
+    },
+    "broker:9092/1": {
+      "nodeid": 1,
+      "state": "UP",
+      "waitresp_cnt": 0,
+      "tx": 20,
+      "txbytes": 2000,
+      "txretries": 0,
+      "rx": 18,
+      "rxbytes": 1800,
+      "int_latency": { "avg": 1000, "max": 2000, "cnt": 2 },
+      "rtt": { "avg": 2500, "max": 4500, "cnt": 2 },
+      "throttle": { "avg": 0, "max": 0, "cnt": 2 }
+    }
+  },
+  "topics": {
+    "orders": {
+      "topic": "orders",
+      "partitions": {
+        "0": { "partition": 0, "desired": true, "txmsgs": 0, "txbytes": 0, "rxmsgs": 10, "rxbytes": 1000, "consumer_lag_stored": 4 },
+        "1": { "partition": 1, "desired": false, "txmsgs": 0, "txbytes": 0, "rxmsgs": 999, "rxbytes": 999, "consumer_lag_stored": 999 },
+        "2": { "partition": 2, "desired": true, "txmsgs": 0, "txbytes": 0, "rxmsgs": 2, "rxbytes": 200, "consumer_lag_stored": -1 }
+      }
+    }
+  }
+}

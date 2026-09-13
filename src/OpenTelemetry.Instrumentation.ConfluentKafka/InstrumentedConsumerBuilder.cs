@@ -29,6 +29,24 @@ public sealed class InstrumentedConsumerBuilder<TKey, TValue> : ConsumerBuilder<
         set => this.options.Metrics = value;
     }
 
+    internal bool EnableClientMetrics
+    {
+        get => this.options.ClientMetrics;
+        set => this.options.ClientMetrics = value;
+    }
+
+    internal bool EnablePartitionMetrics
+    {
+        get => this.options.PartitionMetrics;
+        set => this.options.PartitionMetrics = value;
+    }
+
+    internal TimeSpan StatisticsInterval
+    {
+        get => this.options.StatisticsInterval;
+        set => this.options.StatisticsInterval = value;
+    }
+
     internal bool EnableTraces
     {
         get => this.options.Traces;
@@ -42,8 +60,45 @@ public sealed class InstrumentedConsumerBuilder<TKey, TValue> : ConsumerBuilder<
     public override IConsumer<TKey, TValue> Build()
     {
         var config = (ConsumerConfig)this.Config;
+        KafkaClientMetricsRegistration? metricsRegistration = null;
+        Action<IConsumer<TKey, TValue>, string>? userStatisticsHandler = null;
 
-        var consumer = new InstrumentedConsumer<TKey, TValue>(base.Build(), this.options, config.BootstrapServers)
+        if (this.options.ClientMetrics)
+        {
+            KafkaStatisticsConfiguration.ConfigureInterval(config, this.options.StatisticsInterval);
+            userStatisticsHandler = this.GetInternalStatisticsHandler();
+            var registration = KafkaClientMetrics.Register(this.options.PartitionMetrics);
+            metricsRegistration = registration;
+            try
+            {
+                this.SetInternalStatisticsHandler(KafkaStatisticsHandler.Create(registration, userStatisticsHandler));
+            }
+            catch
+            {
+                registration.Unregister();
+                throw;
+            }
+        }
+
+        IConsumer<TKey, TValue> builtConsumer;
+        try
+        {
+            builtConsumer = base.Build();
+        }
+        catch
+        {
+            metricsRegistration?.Unregister();
+            throw;
+        }
+        finally
+        {
+            if (metricsRegistration != null)
+            {
+                this.SetInternalStatisticsHandler(userStatisticsHandler);
+            }
+        }
+
+        var consumer = new InstrumentedConsumer<TKey, TValue>(builtConsumer, this.options, config.BootstrapServers, metricsRegistration)
         {
             GroupId = config.GroupId,
         };

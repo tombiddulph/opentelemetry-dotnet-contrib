@@ -1,0 +1,58 @@
+{
+  "name": "rdkafka#producer-1",
+  "client_id": "fixture-producer",
+  "type": "producer",
+  "msg_size": 100,
+  "msg_size_max": 1000,
+  "brokers": {
+    "bootstrap:9092/bootstrap": {
+      "nodeid": -1,
+      "state": "UP",
+      "waitresp_cnt": 99,
+      "tx": 99,
+      "txbytes": 99,
+      "txretries": 99,
+      "rx": 99,
+      "rxbytes": 99,
+      "int_latency": { "avg": 99000, "max": 99000, "cnt": 1 },
+      "rtt": { "avg": 99000, "max": 99000, "cnt": 1 },
+      "throttle": { "avg": 99, "max": 99, "cnt": 1 }
+    },
+    "broker:9092/1": {
+      "nodeid": 1,
+      "state": "UP",
+      "waitresp_cnt": 2,
+      "tx": 12,
+      "txbytes": 1200,
+      "txretries": 3,
+      "rx": 11,
+      "rxbytes": 1100,
+      "int_latency": { "avg": 2000, "max": 4000, "cnt": 2 },
+      "rtt": { "avg": 3000, "max": 5000, "cnt": 2 },
+      "throttle": { "avg": 7, "max": 9, "cnt": 2 }
+    },
+    "broker:9093/2": {
+      "nodeid": 2,
+      "state": "DOWN",
+      "waitresp_cnt": 1,
+      "tx": 8,
+      "txbytes": 800,
+      "txretries": 1,
+      "rx": 7,
+      "rxbytes": 700,
+      "int_latency": { "avg": 5000, "max": 6000, "cnt": 1 },
+      "rtt": { "avg": 6000, "max": 8000, "cnt": 1 },
+      "throttle": { "avg": 10, "max": 12, "cnt": 1 }
+    }
+  },
+  "topics": {
+    "orders": {
+      "topic": "orders",
+      "partitions": {
+        "-1": { "partition": -1, "desired": false, "txmsgs": 999, "txbytes": 999, "rxmsgs": 0, "rxbytes": 0, "consumer_lag_stored": -1 },
+        "0": { "partition": 0, "desired": false, "txmsgs": 4, "txbytes": 400, "rxmsgs": 0, "rxbytes": 0, "consumer_lag_stored": -1 },
+        "1": { "partition": 1, "desired": false, "txmsgs": 6, "txbytes": 600, "rxmsgs": 0, "rxbytes": 0, "consumer_lag_stored": -1 }
+      }
+    }
+  }
+}

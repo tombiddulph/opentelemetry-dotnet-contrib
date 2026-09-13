@@ -29,7 +29,10 @@ public static class OpenTelemetryConsumerBuilderExtensions
         var instrumentedConsumerBuilder = consumerBuilder.AsInstrumentedConsumerBuilder();
         if (options != null)
         {
+            instrumentedConsumerBuilder.EnableClientMetrics = options.EnableClientMetrics;
             instrumentedConsumerBuilder.EnableMetrics = options.EnableMetrics;
+            instrumentedConsumerBuilder.EnablePartitionMetrics = options.EnablePartitionMetrics;
+            instrumentedConsumerBuilder.StatisticsInterval = options.StatisticsInterval;
             instrumentedConsumerBuilder.EnableTraces = options.EnableTraces;
         }
 

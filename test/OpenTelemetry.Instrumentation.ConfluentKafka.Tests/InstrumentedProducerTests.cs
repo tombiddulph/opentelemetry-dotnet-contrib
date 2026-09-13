@@ -241,6 +241,22 @@ public class InstrumentedProducerTests
         Assert.Contains(activities, a => a.DisplayName == "send sync-topic");
     }
 
+    [Fact]
+    public void DisposeRemovesClientMetricsRegistration()
+    {
+        var registration = KafkaClientMetrics.Register(enablePartitionMetrics: false);
+        var producer = new InstrumentedProducer<string, string>(
+            new FakeProducer<string, string>(),
+            new ConfluentKafkaProducerInstrumentationOptions<string, string>(),
+            metricsRegistration: registration);
+
+        Assert.True(registration.IsRegistered);
+
+        producer.Dispose();
+
+        Assert.False(registration.IsRegistered);
+    }
+
     private sealed class FakeProducer<TKey, TValue> : IProducer<TKey, TValue>
     {
         public ArgumentException? ThrowArgumentException { get; set; }

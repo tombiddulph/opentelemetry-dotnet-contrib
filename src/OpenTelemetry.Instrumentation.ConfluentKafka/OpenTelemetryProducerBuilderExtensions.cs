@@ -29,7 +29,10 @@ public static class OpenTelemetryProducerBuilderExtensions
         var instrumentedProducerBuilder = producerBuilder.AsInstrumentedProducerBuilder();
         if (options != null)
         {
+            instrumentedProducerBuilder.EnableClientMetrics = options.EnableClientMetrics;
             instrumentedProducerBuilder.EnableMetrics = options.EnableMetrics;
+            instrumentedProducerBuilder.EnablePartitionMetrics = options.EnablePartitionMetrics;
+            instrumentedProducerBuilder.StatisticsInterval = options.StatisticsInterval;
             instrumentedProducerBuilder.EnableTraces = options.EnableTraces;
         }
 

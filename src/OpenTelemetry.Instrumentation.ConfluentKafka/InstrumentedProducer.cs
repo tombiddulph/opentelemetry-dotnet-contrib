@@ -16,14 +16,17 @@ internal sealed class InstrumentedProducer<TKey, TValue> : IProducer<TKey, TValu
     private readonly IProducer<TKey, TValue> producer;
     private readonly ConfluentKafkaProducerInstrumentationOptions<TKey, TValue> options;
     private readonly Task<string?>? clusterIdTask;
+    private readonly KafkaClientMetricsRegistration? metricsRegistration;
 
     public InstrumentedProducer(
         IProducer<TKey, TValue> producer,
         ConfluentKafkaProducerInstrumentationOptions<TKey, TValue> options,
-        string? bootstrapServers = null)
+        string? bootstrapServers = null,
+        KafkaClientMetricsRegistration? metricsRegistration = null)
     {
         this.producer = producer;
         this.options = options;
+        this.metricsRegistration = metricsRegistration;
 
         this.clusterIdTask = ConfluentKafkaCommon.GetOrFetchClusterIdAsync(producer.Handle, bootstrapServers);
     }
@@ -252,8 +255,17 @@ internal sealed class InstrumentedProducer<TKey, TValue> : IProducer<TKey, TValu
     public void SendOffsetsToTransaction(IEnumerable<TopicPartitionOffset> offsets, IConsumerGroupMetadata groupMetadata, TimeSpan timeout) =>
         this.producer.SendOffsetsToTransaction(offsets, groupMetadata, timeout);
 
-    public void Dispose() =>
-        this.producer.Dispose();
+    public void Dispose()
+    {
+        try
+        {
+            this.producer.Dispose();
+        }
+        finally
+        {
+            this.metricsRegistration?.Unregister();
+        }
+    }
 
     private static string FormatProduceException(ProduceException<TKey, TValue> produceException) =>
         produceException.Error.Code.ToString();

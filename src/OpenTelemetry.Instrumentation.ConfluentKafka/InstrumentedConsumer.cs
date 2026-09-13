@@ -14,11 +14,13 @@ internal class InstrumentedConsumer<TKey, TValue> : IConsumer<TKey, TValue>
     private readonly IConsumer<TKey, TValue> consumer;
     private readonly ConfluentKafkaConsumerInstrumentationOptions<TKey, TValue> options;
     private readonly Task<string?>? clusterIdTask;
+    private readonly KafkaClientMetricsRegistration? metricsRegistration;
 
-    public InstrumentedConsumer(IConsumer<TKey, TValue> consumer, ConfluentKafkaConsumerInstrumentationOptions<TKey, TValue> options, string? bootstrapServers = null)
+    public InstrumentedConsumer(IConsumer<TKey, TValue> consumer, ConfluentKafkaConsumerInstrumentationOptions<TKey, TValue> options, string? bootstrapServers = null, KafkaClientMetricsRegistration? metricsRegistration = null)
     {
         this.consumer = consumer;
         this.options = options;
+        this.metricsRegistration = metricsRegistration;
 
         this.clusterIdTask = ConfluentKafkaCommon.GetOrFetchClusterIdAsync(consumer.Handle, bootstrapServers);
     }
@@ -40,7 +42,16 @@ internal class InstrumentedConsumer<TKey, TValue> : IConsumer<TKey, TValue>
     internal Task<string?>? ClusterIdTask => this.clusterIdTask;
 
     public void Dispose()
-        => this.consumer.Dispose();
+    {
+        try
+        {
+            this.consumer.Dispose();
+        }
+        finally
+        {
+            this.metricsRegistration?.Unregister();
+        }
+    }
 
     public int AddBrokers(string brokers)
         => this.consumer.AddBrokers(brokers);

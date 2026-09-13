@@ -29,6 +29,24 @@ public sealed class InstrumentedProducerBuilder<TKey, TValue> : ProducerBuilder<
         set => this.options.Metrics = value;
     }
 
+    internal bool EnableClientMetrics
+    {
+        get => this.options.ClientMetrics;
+        set => this.options.ClientMetrics = value;
+    }
+
+    internal bool EnablePartitionMetrics
+    {
+        get => this.options.PartitionMetrics;
+        set => this.options.PartitionMetrics = value;
+    }
+
+    internal TimeSpan StatisticsInterval
+    {
+        get => this.options.StatisticsInterval;
+        set => this.options.StatisticsInterval = value;
+    }
+
     internal bool EnableTraces
     {
         get => this.options.Traces;
@@ -41,6 +59,45 @@ public sealed class InstrumentedProducerBuilder<TKey, TValue> : ProducerBuilder<
     /// <returns>an <see cref="IProducer{TKey,TValue}"/>.</returns>
     public override IProducer<TKey, TValue> Build()
     {
-        return new InstrumentedProducer<TKey, TValue>(base.Build(), this.options, ((ClientConfig)this.Config).BootstrapServers);
+        var config = (ClientConfig)this.Config;
+        KafkaClientMetricsRegistration? metricsRegistration = null;
+        Action<IProducer<TKey, TValue>, string>? userStatisticsHandler = null;
+
+        if (this.options.ClientMetrics)
+        {
+            KafkaStatisticsConfiguration.ConfigureInterval(config, this.options.StatisticsInterval);
+            userStatisticsHandler = this.GetInternalStatisticsHandler();
+            var registration = KafkaClientMetrics.Register(this.options.PartitionMetrics);
+            metricsRegistration = registration;
+            try
+            {
+                this.SetInternalStatisticsHandler(KafkaStatisticsHandler.Create(registration, userStatisticsHandler));
+            }
+            catch
+            {
+                registration.Unregister();
+                throw;
+            }
+        }
+
+        IProducer<TKey, TValue> producer;
+        try
+        {
+            producer = base.Build();
+        }
+        catch
+        {
+            metricsRegistration?.Unregister();
+            throw;
+        }
+        finally
+        {
+            if (metricsRegistration != null)
+            {
+                this.SetInternalStatisticsHandler(userStatisticsHandler);
+            }
+        }
+
+        return new InstrumentedProducer<TKey, TValue>(producer, this.options, config.BootstrapServers, metricsRegistration);
     }
 }

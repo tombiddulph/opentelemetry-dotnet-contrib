@@ -5,6 +5,12 @@ namespace OpenTelemetry.Instrumentation.ConfluentKafka;
 
 internal class ConfluentKafkaProducerInstrumentationOptions<TKey, TValue>
 {
+    public bool ClientMetrics { get; set; }
+
+    public bool PartitionMetrics { get; set; }
+
+    public TimeSpan StatisticsInterval { get; set; } = TimeSpan.FromSeconds(10);
+
     public bool Metrics { get; set; }
 
     public bool Traces { get; set; }
